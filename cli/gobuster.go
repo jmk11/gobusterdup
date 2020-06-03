@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/OJ/gobuster/v3/libgobuster"
+	"gobusterj/libgobuster"
 )
 
 func ruler() {

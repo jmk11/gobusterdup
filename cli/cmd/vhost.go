@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/OJ/gobuster/v3/cli"
-	"github.com/OJ/gobuster/v3/gobustervhost"
-	"github.com/OJ/gobuster/v3/libgobuster"
+	"gobusterj/cli"
+	"gobusterj/gobustervhost"
+	"gobusterj/libgobuster"
 	"github.com/spf13/cobra"
 )
 

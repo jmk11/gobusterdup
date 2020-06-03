@@ -6,9 +6,10 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/OJ/gobuster/v3/cli"
-	"github.com/OJ/gobuster/v3/gobusterdns"
-	"github.com/OJ/gobuster/v3/libgobuster"
+	"gobusterj/gobusterdns"
+
+	"gobusterj/cli"
+	"gobusterj/libgobuster"
 	"github.com/spf13/cobra"
 )
 
@@ -75,6 +76,11 @@ func parseDNSOptions() (*libgobuster.Options, *gobusterdns.OptionsDNS, error) {
 		return nil, nil, fmt.Errorf("currently can not set custom dns resolver on windows. See https://golang.org/pkg/net/#hdr-Name_Resolution")
 	}
 
+	plugin.Any, err = cmdDNS.Flags().GetBool("any")
+	if err != nil {
+		return nil, nil, fmt.Errorf("invalid value for any: %v", err)
+	}
+
 	return globalopts, plugin, nil
 }
 
@@ -91,6 +97,7 @@ func init() {
 	cmdDNS.Flags().DurationP("timeout", "", time.Second, "DNS resolver timeout")
 	cmdDNS.Flags().BoolP("wildcard", "", false, "Force continued operation when wildcard found")
 	cmdDNS.Flags().StringP("resolver", "r", "", "Use custom DNS server (format server.com or server.com:port)")
+	cmdDNS.Flags().BoolP("any", "a", false, "Send type ANY DNS questions")
 	if err := cmdDNS.MarkFlagRequired("domain"); err != nil {
 		log.Fatalf("error on marking flag as required: %v", err)
 	}

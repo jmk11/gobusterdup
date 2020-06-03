@@ -8,7 +8,7 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"github.com/OJ/gobuster/v3/libgobuster"
+	"gobusterj/libgobuster"
 	"github.com/google/uuid"
 )
 

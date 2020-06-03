@@ -11,10 +11,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/OJ/gobuster/v3/cli"
-	"github.com/OJ/gobuster/v3/gobusterdir"
-	"github.com/OJ/gobuster/v3/helper"
-	"github.com/OJ/gobuster/v3/libgobuster"
+	"gobusterj/cli"
+	"gobusterj/gobusterdir"
+	"gobusterj/helper"
+	"gobusterj/libgobuster"
 )
 
 func httpServer(b *testing.B, content string) *httptest.Server {

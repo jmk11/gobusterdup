@@ -11,8 +11,9 @@ import (
 	"text/tabwriter"
 	"time"
 
-	"github.com/OJ/gobuster/v3/libgobuster"
 	"github.com/google/uuid"
+	"github.com/miekg/dns"
+	"gobusterj/libgobuster"
 )
 
 // ErrWildcard is returned if a wildcard response is found
@@ -99,25 +100,53 @@ func (d *GobusterDNS) PreRun() error {
 // Run is the process implementation of gobusterdns
 func (d *GobusterDNS) Run(word string) ([]libgobuster.Result, error) {
 	subdomain := fmt.Sprintf("%s.%s", word, d.options.Domain)
-	ips, err := d.dnsLookup(subdomain)
 	var ret []libgobuster.Result
-	if err == nil {
-		if !d.isWildcard || !d.wildcardIps.ContainsAny(ips) {
+	var found bool = false
+
+	if d.options.Any {
+		subdomainqualified := subdomain + "."
+		m := new(dns.Msg)
+		m.SetQuestion(subdomainqualified, dns.TypeANY)
+		c := new(dns.Client)
+		in, _, err := c.Exchange(m, "8.8.8.8:53")
+		//fmt.Println(in.MsgHdr)
+		//fmt.Println(err)
+		//fmt.Println(in.Answer)
+		if err == nil && len(in.Answer) != 0 {
+			found = true
 			result := libgobuster.Result{
 				Entity: subdomain,
 				Status: libgobuster.StatusFound,
+				Extra:  fmt.Sprintf("%v", in.Answer),
 			}
-			if d.options.ShowIPs {
-				result.Extra = strings.Join(ips, ", ")
-			} else if d.options.ShowCNAME {
-				cname, err := d.dnsLookupCname(subdomain)
-				if err == nil {
-					result.Extra = cname
-				}
-			}
+			//fmt.Println(result.Extra)
 			ret = append(ret, result)
+			//fmt.Println(in.Answer)
 		}
-	} else if d.globalopts.Verbose {
+	} else {
+		ips, err := d.dnsLookup(subdomain)
+		if err == nil {
+			found = true
+			if !d.isWildcard || !d.wildcardIps.ContainsAny(ips) {
+				result := libgobuster.Result{
+					Entity: subdomain,
+					Status: libgobuster.StatusFound,
+				}
+				if d.options.ShowIPs {
+					result.Extra = strings.Join(ips, ", ")
+				} else if d.options.ShowCNAME {
+					cname, err := d.dnsLookupCname(subdomain)
+					if err == nil {
+						result.Extra = cname
+					}
+				}
+
+				ret = append(ret, result)
+			}
+		}
+	}
+
+	if !found && d.globalopts.Verbose {
 		ret = append(ret, libgobuster.Result{
 			Entity: subdomain,
 			Status: libgobuster.StatusMissed,
@@ -140,7 +169,11 @@ func (d *GobusterDNS) ResultToString(r *libgobuster.Result) (*string, error) {
 		}
 	}
 
-	if d.options.ShowIPs {
+	if d.options.Any {
+		if _, err := fmt.Fprintf(buf, "%s [%s]\n", r.Entity, r.Extra); err != nil {
+			return nil, err
+		}
+	} else if d.options.ShowIPs {
 		if _, err := fmt.Fprintf(buf, "%s [%s]\n", r.Entity, r.Extra); err != nil {
 			return nil, err
 		}
@@ -243,4 +276,11 @@ func (d *GobusterDNS) dnsLookupCname(domain string) (string, error) {
 	defer cancel()
 	time.Sleep(time.Second)
 	return d.resolver.LookupCNAME(ctx, domain)
+}
+
+func (d *GobusterDNS) dnsLookupTxt(domain string) ([]string, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), d.options.Timeout)
+	defer cancel()
+	time.Sleep(time.Second)
+	return d.resolver.LookupTXT(ctx, domain)
 }

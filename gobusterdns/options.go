@@ -12,6 +12,7 @@ type OptionsDNS struct {
 	WildcardForced bool
 	Resolver       string
 	Timeout        time.Duration
+	Any			bool
 }
 
 // NewOptionsDNS returns a new initialized OptionsDNS

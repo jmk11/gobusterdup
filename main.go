@@ -1,6 +1,6 @@
 package main
 
-import "github.com/OJ/gobuster/v3/cli/cmd"
+import "gobusterj/cli/cmd"
 
 //----------------------------------------------------
 // Gobuster -- by OJ Reeves

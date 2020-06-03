@@ -1,7 +1,7 @@
 package gobusterdir
 
 import (
-	"github.com/OJ/gobuster/v3/libgobuster"
+	"gobusterj/libgobuster"
 )
 
 // OptionsDir is the struct to hold all options for this plugin
