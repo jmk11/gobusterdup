@@ -81,6 +81,11 @@ func parseDNSOptions() (*libgobuster.Options, *gobusterdns.OptionsDNS, error) {
 		return nil, nil, fmt.Errorf("invalid value for any: %v", err)
 	}
 
+	plugin.NS, err = cmdDNS.Flags().GetBool("NS")
+	if err != nil {
+		return nil, nil, fmt.Errorf("invalid value for NS: %v", err)
+	}
+
 	return globalopts, plugin, nil
 }
 
@@ -98,6 +103,7 @@ func init() {
 	cmdDNS.Flags().BoolP("wildcard", "", false, "Force continued operation when wildcard found")
 	cmdDNS.Flags().StringP("resolver", "r", "", "Use custom DNS server (format server.com or server.com:port)")
 	cmdDNS.Flags().BoolP("any", "a", false, "Send type ANY DNS questions")
+	cmdDNS.Flags().BoolP("NS", "n", false, "With any, print NS records")
 	if err := cmdDNS.MarkFlagRequired("domain"); err != nil {
 		log.Fatalf("error on marking flag as required: %v", err)
 	}

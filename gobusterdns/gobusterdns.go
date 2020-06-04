@@ -119,6 +119,15 @@ func (d *GobusterDNS) Run(word string) ([]libgobuster.Result, error) {
 				Status: libgobuster.StatusFound,
 				Extra:  fmt.Sprintf("%v", in.Answer),
 			}
+			if d.options.NS {
+				result.Extra = ""
+				for _, answer := range in.Answer {
+					result.Extra = fmt.Sprintf("%s\n\t%v", result.Extra, answer)
+				}
+				for _, answer := range in.Ns {
+					result.Extra = fmt.Sprintf("%s\n\t%v", result.Extra, answer)
+				}
+			}
 			//fmt.Println(result.Extra)
 			ret = append(ret, result)
 			//fmt.Println(in.Answer)
@@ -170,8 +179,14 @@ func (d *GobusterDNS) ResultToString(r *libgobuster.Result) (*string, error) {
 	}
 
 	if d.options.Any {
-		if _, err := fmt.Fprintf(buf, "%s [%s]\n", r.Entity, r.Extra); err != nil {
-			return nil, err
+		if d.options.NS {
+			if _, err := fmt.Fprintf(buf, "%s %s\n", r.Entity, r.Extra); err != nil {
+				return nil, err
+			}
+		} else {
+			if _, err := fmt.Fprintf(buf, "%s\t\t[%s]\n", r.Entity, r.Extra); err != nil {
+				return nil, err
+			}
 		}
 	} else if d.options.ShowIPs {
 		if _, err := fmt.Fprintf(buf, "%s [%s]\n", r.Entity, r.Extra); err != nil {
@@ -278,9 +293,11 @@ func (d *GobusterDNS) dnsLookupCname(domain string) (string, error) {
 	return d.resolver.LookupCNAME(ctx, domain)
 }
 
+/*
 func (d *GobusterDNS) dnsLookupTxt(domain string) ([]string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), d.options.Timeout)
 	defer cancel()
 	time.Sleep(time.Second)
 	return d.resolver.LookupTXT(ctx, domain)
 }
+*/
